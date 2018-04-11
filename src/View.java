@@ -60,22 +60,27 @@ import javax.swing.Timer;
  * for all direction (an image should only be loaded once!!! why?)
  **/
 //LAB5  
-  
+ //LAB 8
 public class View extends JPanel {
-
+	int picNumJump = 0;
 	final static int imgWidth = 165;
 	final static int imgHeight = 165;
-	final int xIncr = 1;
-    final int yIncr = 1;
+	//final int xIncr = 1;
+    //final int yIncr = 1;
 	int picNum = 0;
 	final int frameCount = 10;
+	final int frameCountJump = 8;
     BufferedImage[][] pics;
+    BufferedImage[][] picsJumping;
     private int xloc;
     private int yloc;
     private Direction d = Direction.EAST;
     JFrame frame; 
+    int jumpCount = 0;
     
+    String jumpDirection;
     public boolean getMoving = true;
+    public boolean jump =false;
     final int frameStartSize = 800;
     final int drawDelay = 30; //msec
     DrawPanel drawPanel = new DrawPanel();
@@ -87,6 +92,9 @@ public class View extends JPanel {
 		ArrayList<String> fileNames = new ArrayList<String>(); 
 		for (Direction d : Direction.values()) {
 			fileNames.add("orc_forward_" + d.getName() + ".png");
+		}
+		for (Direction d : Direction.values()) {
+			fileNames.add("orc_jump_" + d.getName() + ".png");
 		}
 		
 		frame = new JFrame();
@@ -102,14 +110,22 @@ public class View extends JPanel {
 		};
 		add(drawPanel); 
 		
-		pics = new BufferedImage[fileNames.size()][];
+		pics = new BufferedImage[fileNames.size()/2][];
 		for (Direction d : Direction.values()) {
 			BufferedImage img = createImage(fileNames.get(d.ordinal()));
 			pics[d.ordinal()] = new BufferedImage[10];
 			for (int i = 0; i < frameCount; i++) {
 				pics[d.ordinal()][i] = img.getSubimage(imgWidth * i, 0, imgWidth, imgHeight);
 			}
-
+		}
+		
+		picsJumping = new BufferedImage[fileNames.size()/2][];
+		for (Direction d : Direction.values()) {
+			BufferedImage img = createImage(fileNames.get(d.ordinal()+8));
+			picsJumping[d.ordinal()] = new BufferedImage[10];
+			for (int i = 0; i < frameCountJump; i++) {
+				picsJumping[d.ordinal()][i] = img.getSubimage(imgWidth * i, 0, imgWidth, imgHeight);
+			}
 		}
 		
 		JButton b1 = new JButton();
@@ -197,19 +213,40 @@ public class View extends JPanel {
 	@SuppressWarnings("serial")
 	private class DrawPanel extends JPanel{
 		int picNum = 0;
-		
+		//int picNumJump = 0;
 		protected void paintComponent(Graphics g) {
 			super.paintComponent(g);
 			g.setColor(Color.gray);
 			setBackground(Color.gray);
 	    	picNum = (picNum + 1) % frameCount;
-	    	g.drawImage(pics[d.ordinal()][picNum], xloc, yloc, Color.gray, this);
+	   // 	picNumJump = (picNumJump + 1) % frameCountJump;
+    	  	
+	    	if(picNumJump>=8) {
+	    		System.out.println("here");
+	    		picNumJump = 0;
+	    		jump = false;
+	    	}
+	    	
+	    	if(jump == true) {
+	    		System.out.println(picNumJump);
+	    		//System.out.print(picsJumping[d.ordinal()][picNumJump]);
+		    	//jumpCount++;
+	    		g.drawImage(picsJumping[d.ordinal()][picNumJump], xloc, yloc, Color.gray, this);
+	    		picNumJump++;
+	    		System.out.println("run:" + picNumJump);
+	    	} else {
+	    		g.drawImage(pics[d.ordinal()][picNum], xloc, yloc, Color.gray, this);
+	    	}
 		}
 		
 		public Dimension getPreferredSize() {
 			return new Dimension(frameStartSize, frameStartSize);
 		}
 		
+	}
+	public void jump() {
+		jump = true;
+		//picNumJump = 0;
 	}
 
 }

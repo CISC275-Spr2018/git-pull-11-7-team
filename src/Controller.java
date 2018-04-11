@@ -53,7 +53,10 @@ private class KeyListener extends KeyAdapter
 				model.changeDirection(Direction.SOUTH);
 }				else if(event.getKeyCode() == KeyEvent.VK_LEFT) {
 					model.changeDirection(Direction.WEST);
-}
+				}	else if(event.getKeyCode() == KeyEvent.VK_SPACE) {
+							view.jump();
+
+				}
 	}
 }
 }

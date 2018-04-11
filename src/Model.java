@@ -61,6 +61,11 @@ public class Model{
     			break;
     		}
     }
+    
+    public void jump() {
+    		
+    }
+   
    /* public void randomDirection() {
     		Random random = new Random();
     		int rand = random.nextInt(4);
