@@ -60,34 +60,37 @@ import javax.swing.Timer;
  * for all direction (an image should only be loaded once!!! why?)
  **/
 //LAB5  
- //LAB 8
+//LAB 8
 public class View extends JPanel {
-	int picNumJump = 0;
+
 	final static int imgWidth = 165;
 	final static int imgHeight = 165;
 	//final int xIncr = 1;
-    //final int yIncr = 1;
+	//final int yIncr = 1;
 	int picNum = 0;
+	int picNumJump = 0;
+	int picNumFire = 0;
 	final int frameCount = 10;
 	final int frameCountJump = 8;
-    BufferedImage[][] pics;
-    BufferedImage[][] picsJumping;
-    private int xloc;
-    private int yloc;
-    private Direction d = Direction.EAST;
-    JFrame frame; 
-    int jumpCount = 0;
-    
-    String jumpDirection;
-    public boolean getMoving = true;
-    public boolean jump =false;
-    final int frameStartSize = 800;
-    final int drawDelay = 30; //msec
-    DrawPanel drawPanel = new DrawPanel();
-    Action drawAction;
-    static Controller c;
-    
-    
+	final int frameCountFire = 4;
+	BufferedImage[][] pics;
+	BufferedImage[][] picsJumping;
+	BufferedImage[][] picsFire;
+	private int xloc;
+	private int yloc;
+	private Direction d = Direction.EAST;
+	JFrame frame; 
+
+	public boolean getMoving = true;
+	public boolean jump = false;
+	public boolean fire = false;
+	final int frameStartSize = 800;
+	final int drawDelay = 30; //msec
+	DrawPanel drawPanel = new DrawPanel();
+	Action drawAction;
+	static Controller c;
+
+
 	public View() {
 		ArrayList<String> fileNames = new ArrayList<String>(); 
 		for (Direction d : Direction.values()) {
@@ -96,9 +99,12 @@ public class View extends JPanel {
 		for (Direction d : Direction.values()) {
 			fileNames.add("orc_jump_" + d.getName() + ".png");
 		}
-		
+		for (Direction d: Direction.values()) {
+			fileNames.add("orc_fire_" + d.getName() + ".png");
+		}
+
 		frame = new JFrame();
-		
+
 		drawAction = new AbstractAction(){
 			//this is the loop - every 30 msec (drawDelay) this is called 
 			public void actionPerformed(ActionEvent e){
@@ -109,49 +115,53 @@ public class View extends JPanel {
 			}
 		};
 		add(drawPanel); 
-		
-		pics = new BufferedImage[fileNames.size()/2][];
+
+		pics = new BufferedImage[fileNames.size()/3][];
+		picsJumping = new BufferedImage[fileNames.size()/3][];
+		picsFire = new BufferedImage[fileNames.size()/3][];
 		for (Direction d : Direction.values()) {
 			BufferedImage img = createImage(fileNames.get(d.ordinal()));
-			pics[d.ordinal()] = new BufferedImage[10];
+			BufferedImage imgJump = createImage(fileNames.get(d.ordinal()+8));
+			BufferedImage imgFire = createImage(fileNames.get(d.ordinal()+16));
+			pics[d.ordinal()] = new BufferedImage[frameCount];
+			picsJumping[d.ordinal()] = new BufferedImage[frameCountJump];
+			picsFire[d.ordinal()] = new BufferedImage[frameCountFire];
 			for (int i = 0; i < frameCount; i++) {
 				pics[d.ordinal()][i] = img.getSubimage(imgWidth * i, 0, imgWidth, imgHeight);
 			}
-		}
-		
-		picsJumping = new BufferedImage[fileNames.size()/2][];
-		for (Direction d : Direction.values()) {
-			BufferedImage img = createImage(fileNames.get(d.ordinal()+8));
-			picsJumping[d.ordinal()] = new BufferedImage[10];
 			for (int i = 0; i < frameCountJump; i++) {
-				picsJumping[d.ordinal()][i] = img.getSubimage(imgWidth * i, 0, imgWidth, imgHeight);
+				picsJumping[d.ordinal()][i] = imgJump.getSubimage(imgWidth * i, 0, imgWidth, imgHeight);
+			}
+			for (int i = 0; i < frameCountFire; i++) {
+				picsFire[d.ordinal()][i] = imgFire.getSubimage(imgWidth * i, 0, imgWidth, imgHeight);
 			}
 		}
-		
+
+
 		JButton b1 = new JButton();
-	   	 try {
-	   		    Image imgButton = ImageIO.read(new File("images/buttons/engine-start-stop-button-300px.png"));
-	   		    b1.setIcon(new ImageIcon(imgButton));
-	   		  } catch (Exception ex) {
-	   		    System.out.println(ex);
-	   		}
-	   	 	b1.setSize(200,100);
-	   		b1.setVisible(true);
-	   		b1.getInputMap().put(KeyStroke.getKeyStroke("SPACE"), "none");
-	   		
-	   		b1.addActionListener(new ActionListener() {
-	   	       public void actionPerformed(ActionEvent ae){
-	   	    	   //Whenever the button is clicked it prints out clicked, we want it to stop movement 
-	   	           if(getMoving == false) {
-	   	        	   getMoving = true;
-	   	           }
-	   	           else {
-	   	        	   getMoving = false;
-	   	           }
-	   	           
-	   	       } 
-	   	    });
-	   	drawPanel.add(b1);
+		try {
+			Image imgButton = ImageIO.read(new File("images/buttons/engine-start-stop-button-300px.png"));
+			b1.setIcon(new ImageIcon(imgButton));
+		} catch (Exception ex) {
+			System.out.println(ex);
+		}
+		b1.setSize(200,100);
+		b1.setVisible(true);
+		b1.getInputMap().put(KeyStroke.getKeyStroke("SPACE"), "none");
+
+		b1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae){
+				//Whenever the button is clicked it prints out clicked, we want it to stop movement 
+				if(getMoving == false) {
+					getMoving = true;
+				}
+				else {
+					getMoving = false;
+				}
+
+			} 
+		});
+		drawPanel.add(b1);
 		frame.getContentPane().add(this);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(frameStartSize, frameStartSize);
@@ -159,18 +169,18 @@ public class View extends JPanel {
 		frame.setVisible(true);
 		frame.pack();
 	}
-	
+
 	//Read image from file and return
-    private BufferedImage createImage(String file){
-    	BufferedImage bufferedImage;
-    	try {
-    		bufferedImage = ImageIO.read(new File("images/orc/" + file));
-    		return bufferedImage;
-    	} catch (IOException e) {
-    		e.printStackTrace();
-    	}
-    	return null;
-    }
+	private BufferedImage createImage(String file){
+		BufferedImage bufferedImage;
+		try {
+			bufferedImage = ImageIO.read(new File("images/orc/" + file));
+			return bufferedImage;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	//main method to run the program
 	public static void main(String[] args) {
@@ -191,11 +201,11 @@ public class View extends JPanel {
 	public int getImageHeight() {
 		return imgHeight;
 	}
-	
+
 	public int getFrameStartSize(){
 		return frameStartSize;
 	}
-	
+
 	public Action getdrawAction(){
 		return drawAction;
 	}
@@ -205,48 +215,56 @@ public class View extends JPanel {
 		this.yloc = y;
 		this.d = d1;
 	}
-	
+
 	public void directionListener(Component c) {
 		frame.add(c);
 	}
-	
+
 	@SuppressWarnings("serial")
 	private class DrawPanel extends JPanel{
 		int picNum = 0;
-		//int picNumJump = 0;
 		protected void paintComponent(Graphics g) {
 			super.paintComponent(g);
 			g.setColor(Color.gray);
 			setBackground(Color.gray);
-	    	picNum = (picNum + 1) % frameCount;
-	   // 	picNumJump = (picNumJump + 1) % frameCountJump;
-    	  	
-	    	if(picNumJump>=8) {
-	    		System.out.println("here");
-	    		picNumJump = 0;
-	    		jump = false;
-	    	}
-	    	
-	    	if(jump == true) {
-	    		System.out.println(picNumJump);
-	    		//System.out.print(picsJumping[d.ordinal()][picNumJump]);
-		    	//jumpCount++;
-	    		g.drawImage(picsJumping[d.ordinal()][picNumJump], xloc, yloc, Color.gray, this);
-	    		picNumJump++;
-	    		System.out.println("run:" + picNumJump);
-	    	} else {
-	    		g.drawImage(pics[d.ordinal()][picNum], xloc, yloc, Color.gray, this);
-	    	}
+			picNum = (picNum + 1) % frameCount;
+
+			if(picNumJump>=8) {
+				picNumJump = 0;
+				jump = false;
+			}
+
+			if(picNumFire>=4) {
+				picNumFire = 0;
+				fire = false;
+			}
+
+			if(jump == true) {
+				g.drawImage(picsJumping[d.ordinal()][picNumJump], xloc, yloc, Color.gray, this);
+				picNumJump++;
+				System.out.println("run:" + picNumJump);
+			} else {
+				g.drawImage(pics[d.ordinal()][picNum], xloc, yloc, Color.gray, this);
+			}
+
+			if(fire == true) {
+				g.drawImage(picsFire[d.ordinal()][picNumFire], xloc, yloc, Color.gray, this);
+				picNumFire++;
+				System.out.println("run:" + picNumFire);
+			}
 		}
-		
+
 		public Dimension getPreferredSize() {
 			return new Dimension(frameStartSize, frameStartSize);
 		}
-		
+
 	}
 	public void jump() {
 		jump = true;
-		//picNumJump = 0;
+	}
+
+	public void fire() {
+		fire = true;
 	}
 
 }

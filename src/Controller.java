@@ -1,5 +1,3 @@
-
-
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -16,8 +14,8 @@ public class Controller {
 	private View view;
 	Action drawAction;
 	final int drawDelay = 30; //msec
-	
-	
+
+
 	public Controller(){
 		view = new View();
 		drawAction = view.getdrawAction();
@@ -26,37 +24,35 @@ public class Controller {
 		JTextField textField = new JTextField();
 		textField.addKeyListener(new KeyListener());
 		view.directionListener(textField);
-	//	frame.add(textField);
 
 	}
 
-        //run the simulation
+	//run the simulation
 	public void start(){
-//		for(int i = 0; i < 5000; i++)
-//		{
-			//increment the x and y coordinates, alter direction if necessary
-			model.updateLocationAndDirection();
-			//update the view
-			view.update(model.getX(), model.getY(), model.getDirect());
-//		}
+		//increment the x and y coordinates, alter direction if necessary
+		model.updateLocationAndDirection();
+		//update the view
+		view.update(model.getX(), model.getY(), model.getDirect());
 	}
 
-private class KeyListener extends KeyAdapter
-{
-	@Override
-	public void keyPressed(KeyEvent event) {		
-		if(event.getKeyCode() == KeyEvent.VK_UP) {
-			model.changeDirection(Direction.NORTH);
-		} else if(event.getKeyCode() == KeyEvent.VK_RIGHT) {
-			model.changeDirection(Direction.EAST);
-	} 		else if(event.getKeyCode() == KeyEvent.VK_DOWN) {
+	private class KeyListener extends KeyAdapter
+	{
+		@Override
+		public void keyPressed(KeyEvent event) {		
+			if(event.getKeyCode() == KeyEvent.VK_UP) {
+				model.changeDirection(Direction.NORTH);
+			} else if(event.getKeyCode() == KeyEvent.VK_RIGHT) {
+				model.changeDirection(Direction.EAST);
+			} 		else if(event.getKeyCode() == KeyEvent.VK_DOWN) {
 				model.changeDirection(Direction.SOUTH);
-}				else if(event.getKeyCode() == KeyEvent.VK_LEFT) {
-					model.changeDirection(Direction.WEST);
-				}	else if(event.getKeyCode() == KeyEvent.VK_SPACE) {
-							view.jump();
-
-				}
+			}				else if(event.getKeyCode() == KeyEvent.VK_LEFT) {
+				model.changeDirection(Direction.WEST);
+			}	else if(event.getKeyCode() == KeyEvent.VK_SPACE) {
+				view.jump();
+			}
+			else if(event.getKeyCode() == KeyEvent.VK_F) {
+				view.fire();
+			}
+		}
 	}
-}
 }
